@@ -74,7 +74,11 @@ def roi_coordinates(image, INDEX_FINGER_MCP, PINKY_MCP):
     return R, roi_height, l1, l2
 
 # calculates ROI, crops, and checks for validity
-def calculate_roi(image, INDEX_FINGER_MCP, PINKY_MCP, max_black=BLACK_THRESHOLD):
+def calculate_roi(image, INDEX_FINGER_MCP, PINKY_MCP, use_padding=True, max_black=BLACK_THRESHOLD):
+    if use_padding:
+        pad = PADDING_SIZE // 2
+        image = cv2.copyMakeBorder(image, pad, pad, pad, pad, cv2.BORDER_REPLICATE)
+
     R, roi_height, l1, l2 = roi_coordinates(image, INDEX_FINGER_MCP, PINKY_MCP) # get coordinates
     h, w = image.shape[:2]
     
@@ -90,20 +94,22 @@ def calculate_roi(image, INDEX_FINGER_MCP, PINKY_MCP, max_black=BLACK_THRESHOLD)
     ver_start, ver_end = min(ver_start, ver_end), max(ver_start, ver_end)
     hor_start, hor_end = min(hor_start, hor_end), max(hor_start, hor_end)
 
-    return check_roi(rotated, ver_start, ver_end, hor_start, hor_end, max_black) # final checks
+    return check_roi(rotated, ver_start, ver_end, hor_start, hor_end, max_black, use_padding) # final checks
 
 # crop the ROI and ensure it's valid
-def check_roi(image, ver_start, ver_end, hor_start, hor_end, max_black=BLACK_THRESHOLD):
+def check_roi(image, ver_start, ver_end, hor_start, hor_end, max_black=BLACK_THRESHOLD, use_padding=True):
     roi = image[ver_start:ver_end, hor_start:hor_end]
     roi_h, roi_w = roi.shape[:2]
     h, w = image.shape[:2]
     
     # check if the ROI crosses into the padding border
-    pad_offset = PADDING_SIZE // 2 # padding offset
-    margin = 10 # 10 pixel margin for minor mistakes
-    if (ver_start < pad_offset - margin or ver_end > h - pad_offset + margin or
-        hor_start < pad_offset - margin or hor_end > w - pad_offset + margin):
-        return roi, "Error: ROI touches padding border, palm is too close."
+    if use_padding:
+        pad_offset = PADDING_SIZE // 2 # padding offset
+        margin = 10 # 10 pixel margin for minor mistakes
+
+        if (ver_start < pad_offset - margin or ver_end > h - pad_offset + margin or
+            hor_start < pad_offset - margin or hor_end > w - pad_offset + margin):
+            return roi, "Error: ROI touches padding border, palm is too close."
     
     # check if ROI is empty (zero width or height for cropping errors)
     if roi_w == 0 or roi_h == 0:
