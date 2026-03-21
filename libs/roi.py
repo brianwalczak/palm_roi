@@ -6,25 +6,6 @@ import numpy as np
 PADDING_SIZE = 300 # padding size around image (for hand_padding)
 BLACK_THRESHOLD = 0.2 # max black area ratio percentage allowed in ROI
 
-# padding to detect close hands and avoid cropping errors when too close
-def hand_padding(image, pad=PADDING_SIZE):
-    h, w = image.shape[:2]
-
-    # create an empty black canvas
-    canvas_h = h + pad
-    canvas_w = w + pad
-    canvas = np.zeros((canvas_h, canvas_w, 3), np.uint8) # all black
-
-    # calculate offsets to center the image
-    top_offset = int(pad / 2)
-    bottom_offset = -int(pad / 2)
-    left_offset = int(pad / 2)
-    right_offset = -int(pad / 2)
-
-    # copy original image into center of canvas
-    canvas[top_offset:bottom_offset, left_offset:right_offset, :] = image
-    return canvas
-
 # calculate ROI coordinates based on index and pinky landmarks
 def roi_coordinates(image, INDEX_FINGER_MCP, PINKY_MCP):
     h, w = image.shape[:2]
@@ -76,8 +57,16 @@ def roi_coordinates(image, INDEX_FINGER_MCP, PINKY_MCP):
 # calculates ROI, crops, and checks for validity
 def calculate_roi(image, INDEX_FINGER_MCP, PINKY_MCP, use_padding=True, max_black=BLACK_THRESHOLD):
     if use_padding:
+        orig_h, orig_w = image.shape[:2]
         pad = PADDING_SIZE // 2
         image = cv2.copyMakeBorder(image, pad, pad, pad, pad, cv2.BORDER_REPLICATE)
+        new_h, new_w = image.shape[:2]
+
+        # adjust landmarks for padding
+        INDEX_FINGER_MCP.x = (INDEX_FINGER_MCP.x * orig_w + pad) / new_w
+        INDEX_FINGER_MCP.y = (INDEX_FINGER_MCP.y * orig_h + pad) / new_h
+        PINKY_MCP.x = (PINKY_MCP.x * orig_w + pad) / new_w
+        PINKY_MCP.y = (PINKY_MCP.y * orig_h + pad) / new_h
 
     R, roi_height, l1, l2 = roi_coordinates(image, INDEX_FINGER_MCP, PINKY_MCP) # get coordinates
     h, w = image.shape[:2]
