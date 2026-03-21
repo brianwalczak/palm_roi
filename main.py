@@ -23,8 +23,8 @@ def camera_setup():
     return picam2
 
 # Get ROI corner coordinates
-def get_roi(frame, landmarks):
-    R, roi_height, l1, l2 = roi_coordinates(frame, landmarks) # calculate ROI coordinates and rotation matrix
+def get_roi(frame, INDEX_FINGER_MCP, PINKY_MCP):
+    R, roi_height, l1, l2 = roi_coordinates(frame, INDEX_FINGER_MCP, PINKY_MCP) # calculate ROI coordinates and rotation matrix
     R_inv = cv2.invertAffineTransform(R) # get inverse rotation matrix
 
     # Apply inverse rotation to point
@@ -40,15 +40,14 @@ def get_roi(frame, landmarks):
     bottom_right = apply_rotation((l2[0], int(l2[1] + roi_height)))
     return top_left, top_right, bottom_left, bottom_right
 
-# Draw ROI guidance lines and landmarks on live feed
-def draw_guidance(frame, results):
+# Draw ROI guidance lines on live feed
+def draw_guidance(frame, INDEX_FINGER_MCP, PINKY_MCP):
     # create display for colored overlays (OV9281 uses grayscale input)
     display = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
     
     # Draw hand landmarks if available
-    if results.multi_hand_landmarks:
-        mp.solutions.drawing_utils.draw_landmarks(display, results.multi_hand_landmarks[0], mp.solutions.hands.HAND_CONNECTIONS) # draw landmarks
-        top_left, top_right, bottom_left, bottom_right = get_roi(frame, results.multi_hand_landmarks[0]) # get ROI corners
+    if INDEX_FINGER_MCP and PINKY_MCP:
+        top_left, top_right, bottom_left, bottom_right = get_roi(frame, INDEX_FINGER_MCP, PINKY_MCP) # get ROI corners
 
         # draw each line for ROI box
         cv2.line(display, top_left, top_right, (0, 255, 0), 2)
@@ -70,8 +69,15 @@ def main():
             frame = raw[:480, :640] # y plane only
 
             results = hands.process(cv2.cvtColor(frame, cv2.COLOR_GRAY2RGB)) # convert to RGB for mediapipe
-            display = draw_guidance(frame, results) # show ROI overlay on live feed
-
+            
+            if results.multi_hand_landmarks:
+                INDEX_FINGER_MCP = results.multi_hand_landmarks[0].landmark[5] # index finger
+                PINKY_MCP = results.multi_hand_landmarks[0].landmark[17] # pinky finger
+            else:
+                INDEX_FINGER_MCP = None
+                PINKY_MCP = None
+            
+            display = draw_guidance(frame, INDEX_FINGER_MCP, PINKY_MCP) # show ROI overlay on live feed
             cv2.imshow("Output", display)
 
             key = cv2.waitKey(1) & 0xFF
@@ -82,7 +88,7 @@ def main():
                     print("Error: No hand detected.")
                     continue
 
-                output, error = calculate_roi(frame, results.multi_hand_landmarks[0]) # get processed ROI
+                output, error = calculate_roi(frame, INDEX_FINGER_MCP, PINKY_MCP) # get processed ROI
 
                 if error:
                     print(f"Error: {error}")

@@ -25,10 +25,8 @@ def hand_padding(image, pad=PADDING_SIZE):
     canvas[top_offset:bottom_offset, left_offset:right_offset, :] = image
     return canvas
 
-# calculate ROI coordinates based on landmarks
-def roi_coordinates(image, landmarks):
-    INDEX_FINGER_MCP = landmarks.landmark[5] # index finger
-    PINKY_MCP = landmarks.landmark[17] # pinky finger
+# calculate ROI coordinates based on index and pinky landmarks
+def roi_coordinates(image, INDEX_FINGER_MCP, PINKY_MCP):
     h, w = image.shape[:2]
 
     # write as coordinates
@@ -76,8 +74,8 @@ def roi_coordinates(image, landmarks):
     return R, roi_height, l1, l2
 
 # calculates ROI, crops, and checks for validity
-def calculate_roi(image, landmarks, max_black=BLACK_THRESHOLD):
-    R, roi_height, l1, l2 = roi_coordinates(image, landmarks) # get coordinates
+def calculate_roi(image, INDEX_FINGER_MCP, PINKY_MCP, max_black=BLACK_THRESHOLD):
+    R, roi_height, l1, l2 = roi_coordinates(image, INDEX_FINGER_MCP, PINKY_MCP) # get coordinates
     h, w = image.shape[:2]
     
     rotated = cv2.warpAffine(image, R, (w, h)) # apply rotation to image
