@@ -1,4 +1,4 @@
-# palm_roi 🖐️
+# `palm_roi` - A region-of-interest extraction tool 🖐️
 
 <img src="https://github.com/user-attachments/assets/0276dbb5-9767-4abd-9b85-d786af07acbd"> <img src="https://github.com/user-attachments/assets/781b03e3-1b5f-43f0-8eeb-a67cdf894e13">
 
