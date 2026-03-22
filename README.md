@@ -47,3 +47,4 @@ python main.py
 
 - **`q`** - Quit
 - **`s`** - Save the current palm ROI to `output.png`
+- **`r`** - Rotate the camera feed 90°
