@@ -1,7 +1,7 @@
 # License: MIT License, Copyright (c) 2026 Brian Walczak. See LICENSE file for details.
 # Example usage with OV9281 monochrome camera, tested on Raspberry Pi Zero 2W.
 
-from libs.roi import roi_coordinates, calculate_roi
+import libs.roi as palm_roi
 from picamera2 import Picamera2
 import mediapipe as mp
 import cv2
@@ -24,7 +24,7 @@ def camera_setup():
 
 # Get ROI corner coordinates
 def get_roi(frame, INDEX_FINGER_MCP, PINKY_MCP, WRIST=None):
-    R, roi_height, l1, l2, upside_down = roi_coordinates(frame, INDEX_FINGER_MCP, PINKY_MCP, WRIST) # calculate ROI coordinates and rotation matrix
+    R, roi_height, l1, l2, upside_down = palm_roi.get_coords(frame, INDEX_FINGER_MCP, PINKY_MCP, WRIST) # calculate ROI coordinates and rotation matrix
     R_inv = cv2.invertAffineTransform(R) # get inverse rotation matrix
 
     # Apply inverse rotation to point
@@ -102,7 +102,7 @@ def main():
                     print("Error: No hand detected.")
                     continue
 
-                output, error = calculate_roi(frame, INDEX_FINGER_MCP, PINKY_MCP, WRIST) # get processed ROI
+                output, error = palm_roi.extract(frame, INDEX_FINGER_MCP, PINKY_MCP, WRIST) # get processed ROI
 
                 if error:
                     print(f"Error: {error}")

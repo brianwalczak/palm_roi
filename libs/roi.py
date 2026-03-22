@@ -7,7 +7,7 @@ PADDING_SIZE = 300 # padding size around image (for hand_padding)
 BLACK_THRESHOLD = 0.2 # max black area ratio percentage allowed in ROI
 
 # calculate ROI coordinates based on index and pinky landmarks
-def roi_coordinates(image, INDEX_FINGER_MCP, PINKY_MCP, WRIST=None):
+def get_coords(image, INDEX_FINGER_MCP, PINKY_MCP, WRIST=None):
     h, w = image.shape[:2]
     upside_down = False
 
@@ -67,7 +67,7 @@ def roi_coordinates(image, INDEX_FINGER_MCP, PINKY_MCP, WRIST=None):
     return R, roi_height, l1, l2, upside_down
 
 # calculates ROI, crops, and checks for validity
-def calculate_roi(image, INDEX_FINGER_MCP, PINKY_MCP, WRIST=None, use_padding=True, max_black=BLACK_THRESHOLD):
+def extract(image, INDEX_FINGER_MCP, PINKY_MCP, WRIST=None, use_padding=True, max_black=BLACK_THRESHOLD):
     if use_padding:
         orig_h, orig_w = image.shape[:2]
         pad = PADDING_SIZE // 2
@@ -84,7 +84,7 @@ def calculate_roi(image, INDEX_FINGER_MCP, PINKY_MCP, WRIST=None, use_padding=Tr
             WRIST.x = (WRIST.x * orig_w + pad) / new_w
             WRIST.y = (WRIST.y * orig_h + pad) / new_h
 
-    R, roi_height, l1, l2, upside_down = roi_coordinates(image, INDEX_FINGER_MCP, PINKY_MCP, WRIST) # get coordinates
+    R, roi_height, l1, l2, upside_down = get_coords(image, INDEX_FINGER_MCP, PINKY_MCP, WRIST) # get coordinates
     h, w = image.shape[:2]
     
     rotated = cv2.warpAffine(image, R, (w, h)) # apply rotation to image
@@ -103,7 +103,7 @@ def calculate_roi(image, INDEX_FINGER_MCP, PINKY_MCP, WRIST=None, use_padding=Tr
     ver_start, ver_end = min(ver_start, ver_end), max(ver_start, ver_end)
     hor_start, hor_end = min(hor_start, hor_end), max(hor_start, hor_end)
 
-    roi, error = check_roi(rotated, ver_start, ver_end, hor_start, hor_end, max_black, use_padding) # final checks
+    roi, error = _validate(rotated, ver_start, ver_end, hor_start, hor_end, max_black, use_padding) # final checks
 
     # flip cropped ROI if upside down
     if upside_down and error is None:
@@ -112,7 +112,7 @@ def calculate_roi(image, INDEX_FINGER_MCP, PINKY_MCP, WRIST=None, use_padding=Tr
     return roi, error
 
 # crop the ROI and ensure it's valid
-def check_roi(image, ver_start, ver_end, hor_start, hor_end, max_black=BLACK_THRESHOLD, use_padding=True):
+def _validate(image, ver_start, ver_end, hor_start, hor_end, max_black=BLACK_THRESHOLD, use_padding=True):
     roi = image[ver_start:ver_end, hor_start:hor_end]
     roi_h, roi_w = roi.shape[:2]
     h, w = image.shape[:2]
