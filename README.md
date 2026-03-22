@@ -8,10 +8,11 @@ The main logic is found in `libs/roi.py`. `main.py` is an example implementation
 
 ## How It Works
 
-1. **Hand Detection** - Each frame is passed through MediaPipe Hands to locate the index finger MCP and pinky MCP landmarks.
-2. **ROI Calculation** - The angle between those two landmarks is used to compute a rotation matrix to align the palm horizontally. A square ROI is then defined between the landmarks with a small offset and vertical shift to center the palm area.
-3. **Guidance Overlay** - On the live feed, the ROI is drawn back (unrotated) as a green bounding box so the user can position their hand.
-4. **Capture & Validation** - When you press `s`, the frame is padded (to avoid edge clipping), rotated, and cropped. The output is validated to ensure it isn't empty or filled with too much black area before saving.
+1. **Hand Detection** - Each frame is passed through MediaPipe Hands to locate the index finger MCP, pinky MCP, and (optional) wrist landmarks.
+2. **ROI Calculation** - The angle between the index and pinky MCP landmarks is used to compute a rotation matrix to align the palm horizontally. A square ROI is then defined between the landmarks with a small offset and vertical shift to center the palm area.
+3. **Orientation Detection** - The wrist landmark is transformed through the same rotation matrix and compared against the midpoint between both MCP landmarks. This determines whether the hand is upside down or not, allowing the ROI to be drawn in the correct direction, at any hand angle.
+4. **Guidance Overlay** - On the live feed, the ROI is drawn back (unrotated) as a green bounding box so the user can position their hand.
+5. **Capture & Validation** - When you press `s`, the frame is padded (to avoid edge clipping), rotated, and cropped. The output is validated to ensure it isn't empty or filled with too much black area before saving.
 
 ## Installation
 
