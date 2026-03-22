@@ -7,12 +7,14 @@ PADDING_SIZE = 300 # padding size around image (for hand_padding)
 BLACK_THRESHOLD = 0.2 # max black area ratio percentage allowed in ROI
 
 # calculate ROI coordinates based on index and pinky landmarks
-def roi_coordinates(image, INDEX_FINGER_MCP, PINKY_MCP):
+def roi_coordinates(image, INDEX_FINGER_MCP, PINKY_MCP, WRIST_MCP=None):
     h, w = image.shape[:2]
+    upside_down = False
 
     # write as coordinates
     l1 = np.array([INDEX_FINGER_MCP.x * w, INDEX_FINGER_MCP.y * h]) # index finger
     l2 = np.array([PINKY_MCP.x * w, PINKY_MCP.y * h]) # pinky finger
+    wrist = np.array([WRIST_MCP.x * w, WRIST_MCP.y * h]) if WRIST_MCP is not None else None # wrist (for upside down detection)
 
     # ensure left point is first for consistent calculation
     if l1[0] > l2[0]:
@@ -34,6 +36,12 @@ def roi_coordinates(image, INDEX_FINGER_MCP, PINKY_MCP):
     points = np.array([l1, l2], dtype=np.float32).reshape(-1, 1, 2)
     l1, l2 = cv2.transform(points, R).reshape(-1, 2).astype(int)
 
+    # detect upside down orientation if wrist is available
+    if wrist is not None:
+        wrist_rotated = cv2.transform(np.array([[wrist]], dtype=np.float32), R).reshape(2) # rotate wrist by matrix too
+        mcp_mid_y = (l1[1] + l2[1]) / 2 # get midpoint y of fingers
+        upside_down = wrist_rotated[1] < mcp_mid_y # wrist above fingers means upside down
+
     # calculate finger distance w/ small offset
     d = l2[0] - l1[0]
     offset = int(d * 0.05) # 5% offset
@@ -48,14 +56,18 @@ def roi_coordinates(image, INDEX_FINGER_MCP, PINKY_MCP):
     roi_height = int(d + (offset * 2))
     delta_y = int(roi_height * 0.15) # 15% of ROI height
 
-    # move l1 and l2 up by delta_y
-    l1[1] -= delta_y
-    l2[1] -= delta_y
+    # shift ROI up by offset
+    if upside_down:
+        l1[1] += delta_y
+        l2[1] += delta_y
+    else:
+        l1[1] -= delta_y
+        l2[1] -= delta_y
     
-    return R, roi_height, l1, l2
+    return R, roi_height, l1, l2, upside_down
 
 # calculates ROI, crops, and checks for validity
-def calculate_roi(image, INDEX_FINGER_MCP, PINKY_MCP, use_padding=True, max_black=BLACK_THRESHOLD):
+def calculate_roi(image, INDEX_FINGER_MCP, PINKY_MCP, WRIST_MCP=None, use_padding=True, max_black=BLACK_THRESHOLD):
     if use_padding:
         orig_h, orig_w = image.shape[:2]
         pad = PADDING_SIZE // 2
@@ -68,14 +80,22 @@ def calculate_roi(image, INDEX_FINGER_MCP, PINKY_MCP, use_padding=True, max_blac
         PINKY_MCP.x = (PINKY_MCP.x * orig_w + pad) / new_w
         PINKY_MCP.y = (PINKY_MCP.y * orig_h + pad) / new_h
 
-    R, roi_height, l1, l2 = roi_coordinates(image, INDEX_FINGER_MCP, PINKY_MCP) # get coordinates
+        if WRIST_MCP is not None:
+            WRIST_MCP.x = (WRIST_MCP.x * orig_w + pad) / new_w
+            WRIST_MCP.y = (WRIST_MCP.y * orig_h + pad) / new_h
+
+    R, roi_height, l1, l2, upside_down = roi_coordinates(image, INDEX_FINGER_MCP, PINKY_MCP, WRIST_MCP) # get coordinates
     h, w = image.shape[:2]
     
     rotated = cv2.warpAffine(image, R, (w, h)) # apply rotation to image
 
     # define ROI coordinates
-    ver_start = l1[1]
-    ver_end = int(l1[1] + roi_height)
+    if upside_down:
+        ver_start = int(l1[1] - roi_height)
+        ver_end = l1[1]
+    else:
+        ver_start = l1[1]
+        ver_end = int(l1[1] + roi_height)
     hor_start = l1[0]
     hor_end = l2[0]
 
