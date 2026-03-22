@@ -59,14 +59,18 @@ def draw_guidance(frame, INDEX_FINGER_MCP, PINKY_MCP):
 
 def main():
     picam2 = camera_setup()
+    rotation = 0
     print("palm_roi - Copyright (c) 2026 Brian Walczak, licensed under MIT License.")
     print("This is an example implementation for extracting palm ROI using an OV9281 monochrome camera.")
-    print("Press 'q' to quit, 's' to save current frame.")
+    print("Press 'q' to quit, 's' to save current frame, 'r' to rotate 90.")
 
     try:
         while True:
             raw = picam2.capture_array()
             frame = raw[:480, :640] # y plane only
+
+            if rotation > 0:
+                frame = cv2.rotate(frame, [cv2.ROTATE_90_CLOCKWISE, cv2.ROTATE_180, cv2.ROTATE_90_COUNTERCLOCKWISE][rotation - 1])
 
             results = hands.process(cv2.cvtColor(frame, cv2.COLOR_GRAY2RGB)) # convert to RGB for mediapipe
             
@@ -83,6 +87,8 @@ def main():
             key = cv2.waitKey(1) & 0xFF
             if key == ord('q'):
                 break
+            elif key == ord('r'):
+                rotation = (rotation + 1) % 4
             elif key == ord('s'):
                 if not results.multi_hand_landmarks:
                     print("Error: No hand detected.")
