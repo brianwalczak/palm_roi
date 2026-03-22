@@ -103,7 +103,13 @@ def calculate_roi(image, INDEX_FINGER_MCP, PINKY_MCP, WRIST=None, use_padding=Tr
     ver_start, ver_end = min(ver_start, ver_end), max(ver_start, ver_end)
     hor_start, hor_end = min(hor_start, hor_end), max(hor_start, hor_end)
 
-    return check_roi(rotated, ver_start, ver_end, hor_start, hor_end, max_black, use_padding) # final checks
+    roi, error = check_roi(rotated, ver_start, ver_end, hor_start, hor_end, max_black, use_padding) # final checks
+
+    # flip cropped ROI if upside down
+    if upside_down and error is None:
+        roi = cv2.flip(roi, -1)
+
+    return roi, error
 
 # crop the ROI and ensure it's valid
 def check_roi(image, ver_start, ver_end, hor_start, hor_end, max_black=BLACK_THRESHOLD, use_padding=True):
