@@ -1,6 +1,6 @@
 # `palm_roi` - A region-of-interest extraction tool 🖐️
 
-<img src="https://github.com/user-attachments/assets/0276dbb5-9767-4abd-9b85-d786af07acbd"> <img src="https://github.com/user-attachments/assets/781b03e3-1b5f-43f0-8eeb-a67cdf894e13">
+<img height="300" src="https://github.com/user-attachments/assets/d65a3e30-b22c-406c-a4a4-b2ce0656b154" />
 
 A lightweight palm region-of-interest (ROI) extraction tool, originally built for use in a palm-vein biometric imaging device. It uses [MediaPipe](https://github.com/google-ai-edge/mediapipe) hand landmarks and OpenCV to detect a hand in a live camera feed, compute an ROI of the palm (with rotation), and crop it for further processing.
 
