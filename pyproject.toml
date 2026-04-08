@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "palm_roi"
-version = "0.1.1"
+version = "0.1.2"
 description = "A lightweight palm region-of-interest (ROI) extraction tool using hand landmarks and OpenCV."
 readme = "README.md"
 license = "MIT"

@@ -1,6 +1,6 @@
 # `palm_roi` - A region-of-interest extraction tool 🖐️
 
-<img height="300" src="./images/cover.png" />
+<img height="300" src="https://raw.githubusercontent.com/brianwalczak/palm_roi/main/images/cover.png" />
 
 A lightweight palm region-of-interest (ROI) extraction Python library, originally built for use in a palm-vein biometric imaging device. It makes use of OpenCV and hand landmarks (using tools like [MediaPipe](https://github.com/google-ai-edge/mediapipe)) to compute an ROI of a palm in an image, calculate a rotation matrix to straighten it out, and process coordinates.
 
