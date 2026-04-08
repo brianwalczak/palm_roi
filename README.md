@@ -49,4 +49,6 @@ if results.multi_hand_landmarks:
     # R, roi_height, l1, l2, upside_down = palm_roi.get_coords(image, INDEX_FINGER_MCP, PINKY_MCP, upside_down=False)
 ```
 
+The landmark parameters (`INDEX_FINGER_MCP`, `PINKY_MCP`, and `WRIST`) accept standard `(x, y)` coordinate tuples, lists, as well as direct landmark objects from tools like MediaPipe.
+
 **See `examples/main.py` for a full implementation demonstrating real-time camera processing and Mediapipe.**

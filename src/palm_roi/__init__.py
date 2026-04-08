@@ -6,8 +6,25 @@ import numpy as np
 PADDING_SIZE = 300 # padding size around image (for hand_padding)
 BLACK_THRESHOLD = 0.2 # max black area ratio percentage allowed in ROI
 
+# helper to allow passing both MediaPipe landmarks and tuples
+class _Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+def _to_point(p):
+    if p is None:
+        return None
+    if isinstance(p, (tuple, list)):
+        return _Point(p[0], p[1])
+    return _Point(p.x, p.y)
+
 # calculate ROI coordinates based on index and pinky landmarks
 def get_coords(image, INDEX_FINGER_MCP, PINKY_MCP, WRIST=None, upside_down=False):
+    INDEX_FINGER_MCP = _to_point(INDEX_FINGER_MCP)
+    PINKY_MCP = _to_point(PINKY_MCP)
+    WRIST = _to_point(WRIST)
+
     h, w = image.shape[:2]
 
     # write as coordinates
@@ -67,6 +84,10 @@ def get_coords(image, INDEX_FINGER_MCP, PINKY_MCP, WRIST=None, upside_down=False
 
 # calculates ROI, crops, and checks for validity
 def extract(image, INDEX_FINGER_MCP, PINKY_MCP, WRIST=None, upside_down=False, use_padding=True, max_black=BLACK_THRESHOLD):
+    INDEX_FINGER_MCP = _to_point(INDEX_FINGER_MCP)
+    PINKY_MCP = _to_point(PINKY_MCP)
+    WRIST = _to_point(WRIST)
+
     if use_padding:
         orig_h, orig_w = image.shape[:2]
         pad = PADDING_SIZE // 2
