@@ -1,6 +1,6 @@
 # Example - Raspberry Pi & OV9281
 
-<img height="300" src="https://github.com/user-attachments/assets/d65a3e30-b22c-406c-a4a4-b2ce0656b154" />
+<img height="300" src="../images/cover.png" />
 
 This is an example implementation of `palm_roi` that demonstrates a live camera feed with an ROI overlay and capture, tested on an **OV9281 monochrome camera** connected to a **Raspberry Pi Zero 2W**.
 
