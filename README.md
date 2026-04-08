@@ -38,11 +38,15 @@ if results.multi_hand_landmarks:
     # 2. Apply padding, rotation, and cropping to your image automatically.
     output, error = palm_roi.extract(image, INDEX_FINGER_MCP, PINKY_MCP, WRIST)
 
+    # Note: If you do not have or prefer not to provide a wrist landmark, pass `upside_down=True` or `False` directly:
+    # output, error = palm_roi.extract(image, INDEX_FINGER_MCP, PINKY_MCP, upside_down=False)
+
     if not error:
         cv2.imwrite(f"output.png", output) # Save your processed ROI!
 
     # Alternatively, get the ROI boundaries, rotation matrix, and orientation for manual application.
     R, roi_height, l1, l2, upside_down = palm_roi.get_coords(image, INDEX_FINGER_MCP, PINKY_MCP, WRIST)
+    # R, roi_height, l1, l2, upside_down = palm_roi.get_coords(image, INDEX_FINGER_MCP, PINKY_MCP, upside_down=False)
 ```
 
 **See `examples/main.py` for a full implementation demonstrating real-time camera processing and Mediapipe.**

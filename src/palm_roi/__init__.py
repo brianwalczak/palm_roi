@@ -7,9 +7,8 @@ PADDING_SIZE = 300 # padding size around image (for hand_padding)
 BLACK_THRESHOLD = 0.2 # max black area ratio percentage allowed in ROI
 
 # calculate ROI coordinates based on index and pinky landmarks
-def get_coords(image, INDEX_FINGER_MCP, PINKY_MCP, WRIST=None):
+def get_coords(image, INDEX_FINGER_MCP, PINKY_MCP, WRIST=None, upside_down=False):
     h, w = image.shape[:2]
-    upside_down = False
 
     # write as coordinates
     l1 = np.array([INDEX_FINGER_MCP.x * w, INDEX_FINGER_MCP.y * h]) # index finger
@@ -67,7 +66,7 @@ def get_coords(image, INDEX_FINGER_MCP, PINKY_MCP, WRIST=None):
     return R, roi_height, l1, l2, upside_down
 
 # calculates ROI, crops, and checks for validity
-def extract(image, INDEX_FINGER_MCP, PINKY_MCP, WRIST=None, use_padding=True, max_black=BLACK_THRESHOLD):
+def extract(image, INDEX_FINGER_MCP, PINKY_MCP, WRIST=None, upside_down=False, use_padding=True, max_black=BLACK_THRESHOLD):
     if use_padding:
         orig_h, orig_w = image.shape[:2]
         pad = PADDING_SIZE // 2
@@ -84,7 +83,7 @@ def extract(image, INDEX_FINGER_MCP, PINKY_MCP, WRIST=None, use_padding=True, ma
             WRIST.x = (WRIST.x * orig_w + pad) / new_w
             WRIST.y = (WRIST.y * orig_h + pad) / new_h
 
-    R, roi_height, l1, l2, upside_down = get_coords(image, INDEX_FINGER_MCP, PINKY_MCP, WRIST) # get coordinates
+    R, roi_height, l1, l2, upside_down = get_coords(image, INDEX_FINGER_MCP, PINKY_MCP, WRIST, upside_down) # get coordinates
     h, w = image.shape[:2]
     
     rotated = cv2.warpAffine(image, R, (w, h)) # apply rotation to image
