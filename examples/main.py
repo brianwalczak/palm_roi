@@ -1,7 +1,7 @@
 # License: MIT License, Copyright (c) 2026 Brian Walczak. See LICENSE file for details.
 # Example usage with OV9281 monochrome camera, tested on Raspberry Pi Zero 2W.
 
-import libs.roi as palm_roi
+import palm_roi
 from picamera2 import Picamera2
 import mediapipe as mp
 import cv2

@@ -1,0 +1,5 @@
+print("palm_roi - A region-of-interest extraction tool.")
+print()
+print("Author:   Brian Walczak")
+print("License:  MIT")
+print("GitHub:   https://github.com/brianwalczak/palm_roi")
