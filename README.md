@@ -18,7 +18,7 @@ pip install palm_roi
 
 ## Usage
 
-Here's an example using Mediapipe hands with `palm_roi` to extract hand landmarks and perform ROI computation:
+Here's an example using Mediapipe hands with `palm_roi` to extract hand landmarks and perform ROI computation.
 
 First, download an off-the-shelf model bundle if using Mediapipe hands:
 ```
