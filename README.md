@@ -20,20 +20,31 @@ pip install palm_roi
 
 Here's an example using Mediapipe hands with `palm_roi` to extract hand landmarks and perform ROI computation:
 
+First, download an off-the-shelf model bundle if using Mediapipe hands:
+```
+wget -q https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task
+```
+
 ```python
 import palm_roi
 import cv2
 import mediapipe as mp
+from mediapipe.tasks import python
+from mediapipe.tasks.python import vision
+
+base_options = python.BaseOptions(model_asset_path='hand_landmarker.task')
+options = vision.HandLandmarkerOptions(base_options=base_options, running_mode=vision.RunningMode.IMAGE, num_hands=1)
+detector = vision.HandLandmarker.create_from_options(options)
 
 # 1. Provide an image and get hand landmarks from MediaPipe (or another tool)
 image = # - your image data - #
-hands = mp.solutions.hands.Hands(static_image_mode=True, max_num_hands=1)
-results = hands.process(cv2.cvtColor(image, cv2.COLOR_GRAY2RGB))
+mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image)
+result = detector.detect(mp_image)
 
-if results.multi_hand_landmarks:
-    INDEX_FINGER_MCP = results.multi_hand_landmarks[0].landmark[5]
-    PINKY_MCP = results.multi_hand_landmarks[0].landmark[17]
-    WRIST = results.multi_hand_landmarks[0].landmark[0]
+if result.hand_landmarks:
+    INDEX_FINGER_MCP = result.hand_landmarks[0][5]
+    PINKY_MCP = result.hand_landmarks[0][17]
+    WRIST = result.hand_landmarks[0][0]
 
     # 2. Apply padding, rotation, and cropping to your image automatically.
     output, error = palm_roi.extract(image, INDEX_FINGER_MCP, PINKY_MCP, WRIST)
