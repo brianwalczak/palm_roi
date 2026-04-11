@@ -6,8 +6,12 @@ from picamera2 import Picamera2
 import mediapipe as mp
 import cv2
 import numpy as np
+from mediapipe.tasks import python
+from mediapipe.tasks.python import vision
 
-hands = mp.solutions.hands.Hands(static_image_mode=False, max_num_hands=1)
+base_options = python.BaseOptions(model_asset_path='hand_landmarker.task')
+options = vision.HandLandmarkerOptions(base_options=base_options, running_mode=vision.RunningMode.IMAGE, num_hands=1)
+detector = vision.HandLandmarker.create_from_options(options)
 
 # Camera setup and configuration
 def camera_setup():
@@ -78,12 +82,13 @@ def main():
             if rotation > 0:
                 frame = cv2.rotate(frame, [cv2.ROTATE_90_CLOCKWISE, cv2.ROTATE_180, cv2.ROTATE_90_COUNTERCLOCKWISE][rotation - 1])
 
-            results = hands.process(cv2.cvtColor(frame, cv2.COLOR_GRAY2RGB)) # convert to RGB for mediapipe
+            mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=cv2.cvtColor(frame, cv2.COLOR_GRAY2RGB)) # convert to RGB for mediapipe
+            result = detector.detect(mp_image)
             
-            if results.multi_hand_landmarks:
-                INDEX_FINGER_MCP = results.multi_hand_landmarks[0].landmark[5] # index finger
-                PINKY_MCP = results.multi_hand_landmarks[0].landmark[17] # pinky finger
-                WRIST = results.multi_hand_landmarks[0].landmark[0] # wrist
+            if result.hand_landmarks:
+                INDEX_FINGER_MCP = result.hand_landmarks[0][5] # index finger
+                PINKY_MCP = result.hand_landmarks[0][17] # pinky finger
+                WRIST = result.hand_landmarks[0][0] # wrist
             else:
                 INDEX_FINGER_MCP = None
                 PINKY_MCP = None
@@ -98,7 +103,7 @@ def main():
             elif key == ord('r'):
                 rotation = (rotation + 1) % 4
             elif key == ord('s'):
-                if not results.multi_hand_landmarks:
+                if not result.hand_landmarks:
                     print("Error: No hand detected.")
                     continue
 

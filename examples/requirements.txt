@@ -1,5 +1,5 @@
 palm_roi
 opencv-python
-numpy
+numpy==1.24.2
 picamera2
 mediapipe

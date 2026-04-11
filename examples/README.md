@@ -41,6 +41,10 @@ pip install -r examples/requirements.txt
 
 ```bash
 cd examples
+
+# Download an off-the-shelf model bundle for Mediapipe hands
+wget -q https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task
+
 python main.py
 ```
 
